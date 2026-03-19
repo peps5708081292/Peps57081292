@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScanSouvenir – Vos souvenirs, pour toujours</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --cream: #FAF7F2;
+    --gold: #C9A84C;
+    --gold-light: #E8D49A;
+    --dark: #1A1614;
+    --warm-grey: #8A7F77;
+    --blush: #E8D5C4;
+    --white: #FFFFFF;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--dark);
+    overflow-x: hidden;
+  }
+
+  /* ── NAVIGATION ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.4rem 4rem;
+    background: rgba(250,247,242,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.7rem; font-weight: 600; letter-spacing: 0.04em;
+    color: var(--dark);
+  }
+  .logo span { color: var(--gold); }
+  nav ul { list-style: none; display: flex; gap: 2.5rem; }
+  nav ul li a {
+    text-decoration: none; color: var(--warm-grey);
+    font-size: 0.85rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  nav ul li a:hover { color: var(--gold); }
+  .nav-cta {
+    background: var(--gold); color: var(--white) !important;
+    padding: 0.6rem 1.6rem; border-radius: 2px;
+    transition: background 0.3s !important;
+  }
+  .nav-cta:hover { background: var(--dark) !important; color: var(--white) !important; }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    display: grid; grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 8rem 4rem 4rem;
+    gap: 4rem;
+  }
+  .hero-text { animation: fadeUp 1s ease both; }
+  .hero-eyebrow {
+    font-size: 0.75rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem;
+  }
+  .hero-eyebrow::before { content: ''; display: block; width: 2.5rem; height: 1px; background: var(--gold); }
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.8rem, 5vw, 4.5rem);
+    font-weight: 300; line-height: 1.1;
+    margin-bottom: 1.8rem;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+  .hero-desc {
+    font-size: 1rem; line-height: 1.8; color: var(--warm-grey);
+    max-width: 44ch; margin-bottom: 3rem;
+  }
+  .hero-actions { display: flex; gap: 1.2rem; align-items: center; }
+  .btn-primary {
+    background: var(--dark); color: var(--white);
+    padding: 1rem 2.4rem; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    border-radius: 2px; transition: background 0.3s, transform 0.2s;
+  }
+  .btn-primary:hover { background: var(--gold); transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent; color: var(--dark);
+    padding: 1rem 2rem; border: 1px solid rgba(26,22,20,0.25);
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase;
+    border-radius: 2px; transition: all 0.3s;
+  }
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  .hero-visual {
+    display: flex; justify-content: center; align-items: center;
+    animation: fadeUp 1s 0.2s ease both;
+  }
+  .plaque-mockup {
+    position: relative; width: 340px; height: 420px;
+    background: linear-gradient(145deg, #D4A96A, #8B6914, #C9904A);
+    border-radius: 12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1.5rem; padding: 2.5rem;
+    box-shadow: 0 40px 80px rgba(26,22,20,0.2), 0 8px 20px rgba(201,168,76,0.3);
+  }
+  .plaque-mockup::before {
+    content: ''; position: absolute; inset: 8px;
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; pointer-events: none;
+  }
+  .plaque-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem; color: rgba(255,255,255,0.95);
+    text-align: center; font-weight: 300; letter-spacing: 0.1em;
+  }
+  .plaque-subtitle {
+    font-size: 0.7rem; color: rgba(255,255,255,0.6);
+    letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .qr-box {
+    width: 110px; height: 110px; background: var(--white);
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+  .qr-box svg { width: 90px; height: 90px; }
+  .plaque-names {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 1.1rem; color: rgba(255,255,255,0.8); text-align: center;
+  }
+
+  /* ── SECTION HOW ── */
+  #how {
+    padding: 7rem 4rem;
+    background: var(--dark);
+    color: var(--white);
+  }
+  .section-eyebrow {
+    font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 1rem;
+  }
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 300;
+    line-height: 1.2; margin-bottom: 3.5rem;
+  }
+  .steps {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem;
+    counter-reset: step;
+  }
+  .step { counter-increment: step; }
+  .step-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem; font-weight: 300; color: rgba(201,168,76,0.25);
+    line-height: 1; margin-bottom: 1rem;
+  }
+  .step-num::before { content: "0" counter(step); }
+  .step h3 {
+    font-family: 'Cormorant Garamond', serif; font-size: 1.4rem;
+    font-weight: 400; margin-bottom: 0.8rem; color: var(--gold-light);
+  }
+  .step p { font-size: 0.9rem; line-height: 1.7; color: rgba(255,255,255,0.55); }
+
+  /* ── PRICING ── */
+  #pricing {
+    padding: 7rem 4rem;
+    background: var(--cream);
+  }
+  .pricing-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+    max-width: 800px; margin: 0 auto;
+  }
+  .pricing-card {
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 4px; padding: 3rem 2.5rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+    background: var(--white);
+  }
+  .pricing-card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(26,22,20,0.1); }
+  .pricing-card.featured {
+    background: var(--dark); color: var(--white);
+    border-color: var(--gold);
+  }
+  .pricing-label {
+    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 1.5rem;
+  }
+  .pricing-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem; font-weight: 300; line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+  .pricing-sub { font-size: 0.8rem; color: var(--warm-grey); margin-bottom: 2rem; }
+  .pricing-card.featured .pricing-sub { color: rgba(255,255,255,0.5); }
+  .pricing-features { list-style: none; margin-bottom: 2.5rem; }
+  .pricing-features li {
+    padding: 0.6rem 0; border-bottom: 1px solid rgba(201,168,76,0.15);
+    font-size: 0.88rem; display: flex; align-items: center; gap: 0.7rem;
+  }
+  .pricing-features li::before { content: '✦'; color: var(--gold); font-size: 0.6rem; }
+
+  /* ── DASHBOARD ── */
+  #dashboard-page {
+    min-height: 100vh; padding-top: 80px;
+    background: #F5F1EB;
+  }
+  .dashboard-layout {
+    display: grid; grid-template-columns: 260px 1fr;
+    min-height: calc(100vh - 80px);
+  }
+  .sidebar {
+    background: var(--dark); padding: 2.5rem 1.8rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .sidebar-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem; color: var(--gold-light);
+    margin-bottom: 1.5rem; padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 0.9rem;
+    padding: 0.8rem 1rem; border-radius: 4px; cursor: pointer;
+    color: rgba(255,255,255,0.55); font-size: 0.85rem;
+    transition: all 0.2s; border: none; background: none; width: 100%;
+    text-align: left; font-family: 'DM Sans', sans-serif;
+  }
+  .sidebar-item:hover, .sidebar-item.active {
+    background: rgba(201,168,76,0.12); color: var(--gold-light);
+  }
+  .sidebar-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+
+  .dashboard-main { padding: 3rem; overflow-y: auto; }
+  .dashboard-header { margin-bottom: 2.5rem; }
+  .dashboard-header h2 {
+    font-family: 'Cormorant Garamond', serif; font-size: 2rem;
+    margin-bottom: 0.3rem; font-weight: 400;
+  }
+  .dashboard-header p { color: var(--warm-grey); font-size: 0.9rem; }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Stats */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-bottom: 2.5rem; }
+  .stat-card {
+    background: var(--white); border-radius: 4px; padding: 1.8rem;
+    border: 1px solid rgba(201,168,76,0.15);
+  }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif; font-size: 2.8rem;
+    font-weight: 300; color: var(--dark); line-height: 1;
+  }
+  .stat-label { font-size: 0.78rem; color: var(--warm-grey); margin-top: 0.3rem; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* Gallery */
+  .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1.5rem; }
+  .gallery-item {
+    aspect-ratio: 1; border-radius: 4px; overflow: hidden;
+    background: var(--blush); position: relative; cursor: pointer;
+  }
+  .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+  .gallery-item .delete-btn {
+    position: absolute; top: 6px; right: 6px;
+    background: rgba(26,22,20,0.7); color: white;
+    border: none; border-radius: 50%; width: 24px; height: 24px;
+    cursor: pointer; font-size: 0.7rem; display: none; align-items: center; justify-content: center;
+  }
+  .gallery-item:hover .delete-btn { display: flex; }
+  .upload-zone {
+    border: 2px dashed rgba(201,168,76,0.4); border-radius: 4px;
+    padding: 3rem; text-align: center; cursor: pointer;
+    transition: all 0.3s; background: rgba(201,168,76,0.03);
+    margin-bottom: 1.5rem;
+  }
+  .upload-zone:hover { border-color: var(--gold); background: rgba(201,168,76,0.07); }
+  .upload-zone input { display: none; }
+  .upload-icon { font-size: 2rem; margin-bottom: 0.8rem; }
+  .upload-zone p { color: var(--warm-grey); font-size: 0.9rem; }
+  .upload-zone strong { color: var(--gold); }
+
+  /* Message */
+  .message-card {
+    background: var(--white); border-radius: 4px; padding: 2.5rem;
+    border: 1px solid rgba(201,168,76,0.15); margin-bottom: 1.5rem;
+  }
+  .message-card label {
+    display: block; font-size: 0.78rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--warm-grey); margin-bottom: 0.7rem;
+  }
+  .message-card input, .message-card textarea {
+    width: 100%; border: 1px solid rgba(26,22,20,0.12); border-radius: 3px;
+    padding: 0.9rem 1.1rem; font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; color: var(--dark); background: var(--cream);
+    outline: none; transition: border-color 0.2s; margin-bottom: 1.2rem;
+  }
+  .message-card input:focus, .message-card textarea:focus { border-color: var(--gold); }
+  .message-card textarea { min-height: 120px; resize: vertical; }
+  .preview-msg {
+    background: var(--dark); color: var(--white); border-radius: 6px;
+    padding: 2rem; margin-top: 1.5rem; text-align: center;
+  }
+  .preview-msg .msg-title {
+    font-family: 'Cormorant Garamond', serif; font-size: 1.6rem;
+    font-weight: 300; margin-bottom: 0.5rem; color: var(--gold-light);
+  }
+  .preview-msg .msg-date { font-size: 0.75rem; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; }
+  .preview-msg .msg-body { margin-top: 1rem; font-size: 0.9rem; line-height: 1.7; color: rgba(255,255,255,0.7); }
+
+  /* QR Generator */
+  .qr-gen-card {
+    background: var(--white); border-radius: 4px; padding: 2.5rem;
+    border: 1px solid rgba(201,168,76,0.15); max-width: 600px;
+  }
+  .qr-output {
+    display: flex; gap: 2rem; align-items: flex-start;
+    margin-top: 2rem; padding-top: 2rem;
+    border-top: 1px solid rgba(201,168,76,0.15);
+  }
+  #qr-display { width: 160px; height: 160px; flex-shrink: 0; }
+  #qr-display canvas, #qr-display img { border-radius: 4px; }
+  .qr-info h4 {
+    font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; margin-bottom: 0.5rem;
+  }
+  .qr-info p { font-size: 0.85rem; color: var(--warm-grey); line-height: 1.6; margin-bottom: 1rem; }
+  .qr-url {
+    font-size: 0.78rem; background: var(--cream); padding: 0.6rem 0.9rem;
+    border-radius: 3px; word-break: break-all; color: var(--gold);
+    font-family: monospace; margin-bottom: 1rem;
+  }
+
+  /* Abonnement */
+  .abonnement-card {
+    background: var(--dark); color: var(--white);
+    border-radius: 4px; padding: 2.5rem; max-width: 500px;
+    border: 1px solid rgba(201,168,76,0.3);
+  }
+  .badge-actif {
+    display: inline-block; background: rgba(201,168,76,0.2);
+    color: var(--gold); font-size: 0.7rem; letter-spacing: 0.12em;
+    text-transform: uppercase; padding: 0.3rem 0.9rem; border-radius: 2px;
+    margin-bottom: 1.5rem;
+  }
+  .abonnement-plan {
+    font-family: 'Cormorant Garamond', serif; font-size: 2.5rem;
+    font-weight: 300; margin-bottom: 0.3rem;
+  }
+  .abonnement-expire { font-size: 0.8rem; color: rgba(255,255,255,0.45); margin-bottom: 2rem; }
+  .abonnement-features { list-style: none; margin-bottom: 2rem; }
+  .abonnement-features li {
+    padding: 0.7rem 0; border-bottom: 1px solid rgba(255,255,255,0.07);
+    font-size: 0.88rem; color: rgba(255,255,255,0.7);
+    display: flex; align-items: center; gap: 0.7rem;
+  }
+  .abonnement-features li::before { content: '✦'; color: var(--gold); font-size: 0.6rem; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--dark); color: var(--white);
+    padding: 1rem 1.8rem; border-radius: 4px;
+    font-size: 0.85rem; border-left: 3px solid var(--gold);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 999;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--dark); color: rgba(255,255,255,0.4);
+    padding: 3rem 4rem; text-align: center; font-size: 0.8rem;
+  }
+  footer span { color: var(--gold); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-in { animation: fadeUp 0.6s ease both; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 1.2rem 2rem; }
+    nav ul { display: none; }
+    #hero { grid-template-columns: 1fr; padding: 6rem 2rem 3rem; }
+    .hero-visual { display: none; }
+    #how, #pricing { padding: 5rem 2rem; }
+    .steps { grid-template-columns: 1fr; gap: 2rem; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .dashboard-layout { grid-template-columns: 1fr; }
+    .sidebar { flex-direction: row; flex-wrap: wrap; padding: 1rem; }
+    .dashboard-main { padding: 1.5rem; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-row { grid-template-columns: 1fr; }
+  }
+
+  /* QR SVG mockup */
+  .qr-svg { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+  <div class="logo">Scan<span>Souvenir</span></div>
+  <ul>
+    <li><a href="#" onclick="showSection('landing')">Accueil</a></li>
+    <li><a href="#how" onclick="showSection('landing'); setTimeout(()=>document.getElementById('how').scrollIntoView({behavior:'smooth'}),100)">Comment ça marche</a></li>
+    <li><a href="#pricing" onclick="showSection('landing'); setTimeout(()=>document.getElementById('pricing').scrollIntoView({behavior:'smooth'}),100)">Tarifs</a></li>
+    <li><a href="#" onclick="showSection('dashboard')" class="nav-cta">Mon espace</a></li>
+  </ul>
+</nav>
+
+<!-- ══ LANDING PAGE ══ -->
+<div id="landing-page" class="page active">
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-text">
+      <div class="hero-eyebrow">Objets gravés intelligents</div>
+      <h1>Vos souvenirs,<br><em>vivants</em> pour toujours</h1>
+      <p class="hero-desc">
+        ScanSouvenir transforme votre plaque gravée en portail vers vos plus beaux moments. 
+        Scannez, vivez, actualisez — sans jamais changer votre objet.
+      </p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="showSection('dashboard')">Accéder à mon espace</button>
+        <button class="btn-secondary" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">Voir comment ça marche</button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="plaque-mockup">
+        <div class="plaque-subtitle">Mariage</div>
+        <div class="plaque-title">Sophie & Thomas</div>
+        <div class="qr-box">
+          <svg class="qr-svg" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- QR simulé -->
+            <rect x="5" y="5" width="30" height="30" rx="2" fill="none" stroke="#1A1614" stroke-width="3"/>
+            <rect x="11" y="11" width="18" height="18" rx="1" fill="#1A1614"/>
+            <rect x="55" y="5" width="30" height="30" rx="2" fill="none" stroke="#1A1614" stroke-width="3"/>
+            <rect x="61" y="11" width="18" height="18" rx="1" fill="#1A1614"/>
+            <rect x="5" y="55" width="30" height="30" rx="2" fill="none" stroke="#1A1614" stroke-width="3"/>
+            <rect x="11" y="61" width="18" height="18" rx="1" fill="#1A1614"/>
+            <!-- Data dots -->
+            <rect x="42" y="5" width="5" height="5" fill="#1A1614"/>
+            <rect x="49" y="5" width="5" height="5" fill="#1A1614"/>
+            <rect x="42" y="12" width="5" height="5" fill="#1A1614"/>
+            <rect x="42" y="19" width="5" height="5" fill="#1A1614"/>
+            <rect x="49" y="19" width="5" height="5" fill="#1A1614"/>
+            <rect x="42" y="40" width="5" height="5" fill="#1A1614"/>
+            <rect x="49" y="33" width="5" height="5" fill="#1A1614"/>
+            <rect x="55" y="40" width="5" height="5" fill="#1A1614"/>
+            <rect x="62" y="40" width="5" height="5" fill="#1A1614"/>
+            <rect x="69" y="33" width="5" height="5" fill="#1A1614"/>
+            <rect x="76" y="40" width="5" height="5" fill="#1A1614"/>
+            <rect x="55" y="47" width="5" height="5" fill="#1A1614"/>
+            <rect x="69" y="47" width="5" height="5" fill="#1A1614"/>
+            <rect x="76" y="54" width="5" height="5" fill="#1A1614"/>
+            <rect x="62" y="61" width="5" height="5" fill="#1A1614"/>
+            <rect x="76" y="61" width="5" height="5" fill="#1A1614"/>
+            <rect x="55" y="68" width="5" height="5" fill="#1A1614"/>
+            <rect x="69" y="68" width="5" height="5" fill="#1A1614"/>
+            <rect x="55" y="75" width="5" height="5" fill="#1A1614"/>
+            <rect x="76" y="75" width="5" height="5" fill="#1A1614"/>
+            <rect x="42" y="47" width="5" height="5" fill="#1A1614"/>
+            <rect x="42" y="61" width="5" height="5" fill="#1A1614"/>
+            <rect x="49" y="54" width="5" height="5" fill="#1A1614"/>
+            <rect x="49" y="68" width="5" height="5" fill="#1A1614"/>
+            <rect x="42" y="75" width="5" height="5" fill="#1A1614"/>
+          </svg>
+        </div>
+        <div class="plaque-names">14 juin 2025 — Paris</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="section-eyebrow">Le concept</div>
+    <h2>Simple comme<br>un coup de cœur</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <h3>Commandez votre plaque</h3>
+        <p>Choisissez votre matière — bois noble ou acrylique — et personnalisez votre gravure. Le QR code unique est intégré à la création.</p>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <h3>Créez votre galerie</h3>
+        <p>Depuis votre espace personnel, uploadez vos photos, ajoutez un message de cœur. Votre contenu est en ligne en quelques secondes.</p>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <h3>Partagez & actualisez</h3>
+        <p>Chaque scan ouvre votre galerie. Ajoutez de nouveaux souvenirs quand vous voulez. La plaque ne change pas — la magie, elle, évolue.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing">
+    <div style="text-align:center; margin-bottom:3.5rem;">
+      <div class="section-eyebrow">Tarifs</div>
+      <h2>Un investissement,<br>une vie de souvenirs</h2>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-label">Essentiel</div>
+        <div class="pricing-price">39€</div>
+        <div class="pricing-sub">achat unique de la plaque</div>
+        <ul class="pricing-features">
+          <li>Plaque gravée personnalisée</li>
+          <li>QR code unique intégré</li>
+          <li>Galerie photo en ligne</li>
+          <li>1 an d'hébergement inclus</li>
+          <li>Message personnalisé</li>
+        </ul>
+        <button class="btn-primary" onclick="showSection('dashboard')">Commencer</button>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-label">Premium</div>
+        <div class="pricing-price" style="color:var(--gold-light)">39€</div>
+        <div class="pricing-sub">+ 9€/an après la 1ère année</div>
+        <ul class="pricing-features">
+          <li>Tout le plan Essentiel</li>
+          <li>Galerie vidéo incluse</li>
+          <li>Statistiques de scans</li>
+          <li>Mises à jour illimitées</li>
+          <li>Support prioritaire</li>
+        </ul>
+        <button class="btn-primary" onclick="showSection('dashboard')" style="background:var(--gold)">Choisir Premium</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 <span>ScanSouvenir</span> — Tous droits réservés · Créé avec ♡ pour vos plus beaux moments</p>
+  </footer>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div id="dashboard-page" class="page">
+  <div class="dashboard-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-title">Sophie & Thomas ✦</div>
+      <button class="sidebar-item active" onclick="showPanel('overview', this)">
+        <span class="icon">◈</span> Vue d'ensemble
+      </button>
+      <button class="sidebar-item" onclick="showPanel('gallery', this)">
+        <span class="icon">⊞</span> Ma galerie
+      </button>
+      <button class="sidebar-item" onclick="showPanel('message', this)">
+        <span class="icon">✉</span> Mon message
+      </button>
+      <button class="sidebar-item" onclick="showPanel('qrgen', this)">
+        <span class="icon">⊡</span> Mon QR code
+      </button>
+      <button class="sidebar-item" onclick="showPanel('abonnement', this)">
+        <span class="icon">♦</span> Abonnement
+      </button>
+      <div style="flex:1"></div>
+      <button class="sidebar-item" onclick="showSection('landing')" style="margin-top:auto">
+        <span class="icon">←</span> Retour au site
+      </button>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="dashboard-main">
+
+      <!-- OVERVIEW -->
+      <div id="panel-overview" class="panel active">
+        <div class="dashboard-header">
+          <h2>Bonjour, Sophie & Thomas 👋</h2>
+          <p>Votre galerie est en ligne et prête à être partagée.</p>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-num" id="scan-count">47</div>
+            <div class="stat-label">Scans au total</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="photo-count">12</div>
+            <div class="stat-label">Photos en ligne</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">∞</div>
+            <div class="stat-label">Souvenirs possibles</div>
+          </div>
+        </div>
+        <div style="background:var(--white); border-radius:4px; padding:2rem; border:1px solid rgba(201,168,76,0.15);">
+          <div class="section-eyebrow" style="margin-bottom:0.8rem">Votre lien public</div>
+          <div class="qr-url">https://scansouvenir.fr/s/sophie-thomas-2025</div>
+          <p style="font-size:0.85rem; color:var(--warm-grey)">Ce lien s'ouvre quand quelqu'un scanne votre QR code. Vous pouvez le partager directement.</p>
+        </div>
+      </div>
+
+      <!-- GALLERY -->
+      <div id="panel-gallery" class="panel">
+        <div class="dashboard-header">
+          <h2>Ma galerie</h2>
+          <p>Uploadez vos plus beaux souvenirs — vos invités les verront en scannant.</p>
+        </div>
+        <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+          <input type="file" id="file-input" accept="image/*,video/*" multiple onchange="handleUpload(event)">
+          <div class="upload-icon">☁</div>
+          <p>Glissez vos photos ici ou <strong>cliquez pour choisir</strong></p>
+          <p style="font-size:0.78rem; margin-top:0.4rem;">JPG, PNG, MP4 · Max 20 Mo par fichier</p>
+        </div>
+        <div class="gallery-grid" id="gallery-grid">
+          <!-- Photos par défaut -->
+          <div class="gallery-item" style="background:linear-gradient(135deg,#E8D5C4,#C9A88A)">
+            <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;">💍</div>
+            <button class="delete-btn" onclick="deleteItem(this)">✕</button>
+          </div>
+          <div class="gallery-item" style="background:linear-gradient(135deg,#D4B896,#A8845C)">
+            <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;">🌸</div>
+            <button class="delete-btn" onclick="deleteItem(this)">✕</button>
+          </div>
+          <div class="gallery-item" style="background:linear-gradient(135deg,#C9A48C,#8B6444)">
+            <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;">🥂</div>
+            <button class="delete-btn" onclick="deleteItem(this)">✕</button>
+          </div>
+          <div class="gallery-item" style="background:linear-gradient(135deg,#E0C8B0,#C4A07A)">
+            <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;">💐</div>
+            <button class="delete-btn" onclick="deleteItem(this)">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MESSAGE -->
+      <div id="panel-message" class="panel">
+        <div class="dashboard-header">
+          <h2>Mon message</h2>
+          <p>Le texte affiché quand vos invités scannent votre QR code.</p>
+        </div>
+        <div class="message-card">
+          <label>Titre affiché</label>
+          <input type="text" id="msg-title" value="Sophie & Thomas — 14 juin 2025" placeholder="Ex: Marie & Jean — Notre mariage" oninput="updatePreview()">
+
+          <label>Date de l'événement</label>
+          <input type="text" id="msg-date" value="14 juin 2025 · Paris, France" placeholder="Ex: 20 septembre 2025 · Lyon" oninput="updatePreview()">
+
+          <label>Votre message personnel</label>
+          <textarea id="msg-body" oninput="updatePreview()">Merci d'avoir partagé ce jour unique avec nous. Ces photos sont nos plus beaux souvenirs, et vous en faites partie. Avec tout notre amour 💛</textarea>
+
+          <button class="btn-primary" onclick="saveMessage()">Sauvegarder le message</button>
+        </div>
+        <div class="preview-msg">
+          <div class="msg-date" id="prev-date">14 juin 2025 · Paris, France</div>
+          <div class="msg-title" id="prev-title">Sophie & Thomas — 14 juin 2025</div>
+          <div class="msg-body" id="prev-body">Merci d'avoir partagé ce jour unique avec nous. Ces photos sont nos plus beaux souvenirs, et vous en faites partie. Avec tout notre amour 💛</div>
+        </div>
+      </div>
+
+      <!-- QR CODE -->
+      <div id="panel-qrgen" class="panel">
+        <div class="dashboard-header">
+          <h2>Mon QR code</h2>
+          <p>Votre QR code unique, prêt à être gravé sur votre plaque.</p>
+        </div>
+        <div class="qr-gen-card">
+          <label style="font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--warm-grey); display:block; margin-bottom:0.7rem;">
+            URL de votre galerie
+          </label>
+          <div style="display:flex; gap:0.8rem;">
+            <input type="text" id="qr-url-input" value="https://scansouvenir.fr/s/sophie-thomas-2025"
+              style="flex:1; border:1px solid rgba(26,22,20,0.12); border-radius:3px; padding:0.9rem 1.1rem;
+              font-family:'DM Sans',sans-serif; font-size:0.88rem; background:var(--cream); outline:none;">
+            <button class="btn-primary" onclick="generateQR()">Générer</button>
+          </div>
+          <div class="qr-output" id="qr-output" style="display:none">
+            <div id="qr-display"></div>
+            <div class="qr-info">
+              <h4>QR code prêt !</h4>
+              <p>Ce QR code est lié à votre galerie. Envoyez-le à votre graveur ou téléchargez-le pour votre commande Etsy.</p>
+              <div class="qr-url" id="qr-link-display"></div>
+              <button class="btn-primary" onclick="downloadQR()">Télécharger le QR code</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABONNEMENT -->
+      <div id="panel-abonnement" class="panel">
+        <div class="dashboard-header">
+          <h2>Abonnement</h2>
+          <p>Votre formule et informations de renouvellement.</p>
+        </div>
+        <div class="abonnement-card">
+          <div class="badge-actif">✦ Actif</div>
+          <div class="abonnement-plan">Formule Premium</div>
+          <div class="abonnement-expire">Renouvellement le 14 juin 2026 · 9€/an</div>
+          <ul class="abonnement-features">
+            <li>Galerie photos & vidéos illimitée</li>
+            <li>Message personnalisé</li>
+            <li>QR code dynamique unique</li>
+            <li>Statistiques de scans</li>
+            <li>Mises à jour du contenu à vie</li>
+            <li>Support prioritaire</li>
+          </ul>
+          <button class="btn-primary" style="background:rgba(201,168,76,0.2); color:var(--gold-light); border:1px solid rgba(201,168,76,0.3)">
+            Gérer l'abonnement
+          </button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── NAVIGATION ──
+  function showSection(section) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(section + '-page').classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function showPanel(name, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    if (btn) btn.classList.add('active');
+  }
+
+  // ── TOAST ──
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── GALLERY ──
+  function handleUpload(e) {
+    const files = Array.from(e.target.files);
+    const grid = document.getElementById('gallery-grid');
+    files.forEach(file => {
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+        if (file.type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.src = ev.target.result;
+          item.appendChild(img);
+        } else {
+          item.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:1.5rem;flex-direction:column;gap:0.3rem;"><span>🎬</span><span style="font-size:0.65rem;color:rgba(0,0,0,0.5)">${file.name.substring(0,12)}</span></div>`;
+        }
+        const del = document.createElement('button');
+        del.className = 'delete-btn';
+        del.textContent = '✕';
+        del.onclick = function() { deleteItem(this); };
+        item.appendChild(del);
+        grid.appendChild(item);
+        updatePhotoCount();
+      };
+      reader.readAsDataURL(file);
+    });
+    toast(`${files.length} fichier(s) ajouté(s) à votre galerie ✦`);
+    e.target.value = '';
+  }
+
+  function deleteItem(btn) {
+    btn.parentElement.remove();
+    updatePhotoCount();
+    toast('Photo supprimée');
+  }
+
+  function updatePhotoCount() {
+    const count = document.querySelectorAll('#gallery-grid .gallery-item').length;
+    document.getElementById('photo-count').textContent = count;
+  }
+
+  // ── MESSAGE ──
+  function updatePreview() {
+    document.getElementById('prev-title').textContent = document.getElementById('msg-title').value;
+    document.getElementById('prev-date').textContent = document.getElementById('msg-date').value;
+    document.getElementById('prev-body').textContent = document.getElementById('msg-body').value;
+  }
+
+  function saveMessage() {
+    toast('Message sauvegardé avec succès ✦');
+  }
+
+  // ── QR CODE ──
+  function generateQR() {
+    const url = document.getElementById('qr-url-input').value;
+    const display = document.getElementById('qr-display');
+    display.innerHTML = '';
+    new QRCode(display, {
+      text: url,
+      width: 160,
+      height: 160,
+      colorDark: '#1A1614',
+      colorLight: '#FFFFFF',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+    document.getElementById('qr-link-display').textContent = url;
+    document.getElementById('qr-output').style.display = 'flex';
+    toast('QR code généré ! Prêt à être gravé ✦');
+  }
+
+  function downloadQR() {
+    const canvas = document.querySelector('#qr-display canvas');
+    if (!canvas) { toast('Générez d\'abord votre QR code'); return; }
+    const link = document.createElement('a');
+    link.download = 'scansouvenir-qrcode.png';
+    link.href = canvas.toDataURL();
+    link.click();
+    toast('QR code téléchargé ✦');
+  }
+
+  // ── SCAN COUNTER (simulation) ──
+  setInterval(() => {
+    const el = document.getElementById('scan-count');
+    if (el && Math.random() > 0.7) {
+      el.textContent = parseInt(el.textContent) + 1;
+    }
+  }, 8000);
+</script>
+</body>
+</html>
